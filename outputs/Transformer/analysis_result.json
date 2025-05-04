@@ -1,0 +1,382 @@
+{
+  "metrics": {
+    "total_lines": 119,
+    "non_empty_lines": 72,
+    "character_count": 3718,
+    "import_count": 1,
+    "class_count": 3,
+    "function_count": 9
+  },
+  "complexity": {
+    "functions": {
+      "positional_encoding": {
+        "cyclomatic": 1,
+        "cognitive": 1.5,
+        "lines": 11
+      },
+      "get_angles": {
+        "cyclomatic": 1,
+        "cognitive": 1.5,
+        "lines": 2
+      },
+      "__init__": {
+        "cyclomatic": 1,
+        "cognitive": 1.5,
+        "lines": 13
+      },
+      "call": {
+        "cyclomatic": 1,
+        "cognitive": 1.5,
+        "lines": 19
+      },
+      "split_heads": {
+        "cyclomatic": 1,
+        "cognitive": 1.5,
+        "lines": 2
+      }
+    },
+    "classes": {
+      "Encoder": {
+        "methods": [
+          {
+            "name": "__init__",
+            "complexity": {
+              "cyclomatic": 1,
+              "cognitive": 1.5,
+              "lines": 13
+            }
+          },
+          {
+            "name": "call",
+            "complexity": {
+              "cyclomatic": 1,
+              "cognitive": 1.5,
+              "lines": 19
+            }
+          }
+        ],
+        "total_cyclomatic": 2,
+        "total_cognitive": 3.0,
+        "lines": 28
+      },
+      "EncoderLayer": {
+        "methods": [
+          {
+            "name": "__init__",
+            "complexity": {
+              "cyclomatic": 1,
+              "cognitive": 1.5,
+              "lines": 13
+            }
+          },
+          {
+            "name": "call",
+            "complexity": {
+              "cyclomatic": 1,
+              "cognitive": 1.5,
+              "lines": 19
+            }
+          }
+        ],
+        "total_cyclomatic": 2,
+        "total_cognitive": 3.0,
+        "lines": 22
+      },
+      "MultiHeadAttention": {
+        "methods": [
+          {
+            "name": "__init__",
+            "complexity": {
+              "cyclomatic": 1,
+              "cognitive": 1.5,
+              "lines": 13
+            }
+          },
+          {
+            "name": "call",
+            "complexity": {
+              "cyclomatic": 1,
+              "cognitive": 1.5,
+              "lines": 19
+            }
+          },
+          {
+            "name": "split_heads",
+            "complexity": {
+              "cyclomatic": 1,
+              "cognitive": 1.5,
+              "lines": 2
+            }
+          }
+        ],
+        "total_cyclomatic": 3,
+        "total_cognitive": 4.5,
+        "lines": 39
+      }
+    },
+    "overall": {
+      "total_cyclomatic": 5,
+      "total_cognitive": 7.5,
+      "average_cyclomatic": 1.0,
+      "average_cognitive": 1.5,
+      "complexity_density": 0.10416666666666667
+    }
+  },
+  "dependencies": {
+    "Encoder": {
+      "type": "class",
+      "depends_on": [],
+      "depended_by": [
+        "Encoder.__init__",
+        "Encoder.call"
+      ]
+    },
+    "Encoder.__init__": {
+      "type": "method",
+      "depends_on": [
+        "Encoder",
+        "positional_encoding",
+        "EncoderLayer"
+      ],
+      "depended_by": []
+    },
+    "Encoder.call": {
+      "type": "method",
+      "depends_on": [
+        "Encoder"
+      ],
+      "depended_by": []
+    },
+    "EncoderLayer": {
+      "type": "class",
+      "depends_on": [],
+      "depended_by": [
+        "EncoderLayer.__init__",
+        "EncoderLayer.call",
+        "Encoder.__init__"
+      ]
+    },
+    "EncoderLayer.__init__": {
+      "type": "method",
+      "depends_on": [
+        "EncoderLayer",
+        "MultiHeadAttention"
+      ],
+      "depended_by": []
+    },
+    "EncoderLayer.call": {
+      "type": "method",
+      "depends_on": [
+        "EncoderLayer"
+      ],
+      "depended_by": []
+    },
+    "MultiHeadAttention": {
+      "type": "class",
+      "depends_on": [],
+      "depended_by": [
+        "MultiHeadAttention.__init__",
+        "MultiHeadAttention.call",
+        "MultiHeadAttention.split_heads",
+        "EncoderLayer.__init__"
+      ]
+    },
+    "MultiHeadAttention.__init__": {
+      "type": "method",
+      "depends_on": [
+        "MultiHeadAttention"
+      ],
+      "depended_by": []
+    },
+    "MultiHeadAttention.call": {
+      "type": "method",
+      "depends_on": [
+        "MultiHeadAttention"
+      ],
+      "depended_by": []
+    },
+    "MultiHeadAttention.split_heads": {
+      "type": "method",
+      "depends_on": [
+        "MultiHeadAttention"
+      ],
+      "depended_by": []
+    },
+    "positional_encoding": {
+      "type": "function",
+      "depends_on": [
+        "get_angles"
+      ],
+      "depended_by": [
+        "Encoder.__init__"
+      ]
+    },
+    "get_angles": {
+      "type": "function",
+      "depends_on": [],
+      "depended_by": [
+        "positional_encoding"
+      ]
+    },
+    "__init__": {
+      "type": "function",
+      "depends_on": [],
+      "depended_by": []
+    },
+    "call": {
+      "type": "function",
+      "depends_on": [],
+      "depended_by": []
+    },
+    "split_heads": {
+      "type": "function",
+      "depends_on": [],
+      "depended_by": []
+    }
+  },
+  "algorithms": {
+    "neural_network": {
+      "has_layers": true,
+      "has_activations": false,
+      "has_loss_function": false,
+      "has_optimizer": false,
+      "has_forward_pass": false
+    },
+    "optimization": {
+      "gradient_descent": false,
+      "backpropagation": false,
+      "weight_initialization": true
+    },
+    "attention_mechanism": {
+      "self_attention": true,
+      "query_key_value": false,
+      "softmax_attention": false
+    },
+    "linear_algebra": {
+      "matrix_multiplication": true,
+      "vector_operations": true,
+      "tensor_operations": true
+    },
+    "design_patterns": {
+      "inheritance": true,
+      "composition": false,
+      "factory": false,
+      "observer": false,
+      "singleton": false
+    }
+  },
+  "data_flow": {
+    "entry_points": [
+      {
+        "function": "positional_encoding",
+        "parameters": [
+          "position",
+          "d_model"
+        ]
+      },
+      {
+        "function": "get_angles",
+        "parameters": [
+          "position",
+          "i",
+          "d_model"
+        ]
+      },
+      {
+        "function": "__init__",
+        "parameters": [
+          "num_layers",
+          "d_model",
+          "num_heads",
+          "dff",
+          "input_vocab_size",
+          "rate"
+        ]
+      },
+      {
+        "function": "call",
+        "parameters": [
+          "x",
+          "training",
+          "mask"
+        ]
+      },
+      {
+        "function": "__init__",
+        "parameters": [
+          "d_model",
+          "num_heads",
+          "dff",
+          "rate"
+        ]
+      },
+      {
+        "function": "call",
+        "parameters": [
+          "x",
+          "training",
+          "mask"
+        ]
+      },
+      {
+        "function": "__init__",
+        "parameters": [
+          "d_model",
+          "num_heads"
+        ]
+      },
+      {
+        "function": "call",
+        "parameters": [
+          "v",
+          "k",
+          "q",
+          "mask"
+        ]
+      },
+      {
+        "function": "split_heads",
+        "parameters": [
+          "x",
+          "batch_size"
+        ]
+      }
+    ],
+    "exit_points": [
+      {
+        "function": "positional_encoding",
+        "returns": "cast"
+      },
+      {
+        "function": "get_angles",
+        "returns": "unknown"
+      },
+      {
+        "function": "call",
+        "returns": "x"
+      },
+      {
+        "function": "call",
+        "returns": "out2"
+      },
+      {
+        "function": "call",
+        "returns": "unknown"
+      },
+      {
+        "function": "split_heads",
+        "returns": "transpose"
+      }
+    ],
+    "data_transformations": [],
+    "data_dependencies": []
+  },
+  "code_quality": {
+    "docstring_coverage": 0.0,
+    "naming_consistency": 0.8837209302325582,
+    "average_function_length": 10.11111111111111,
+    "complexity_ratio": 13.222222222222221,
+    "overall_quality": 0.5920051679586563,
+    "dominant_naming_convention": "snake_case"
+  }
+}
