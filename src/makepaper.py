@@ -78,13 +78,20 @@ class PaperGenerator:
         
         return figure_paths
     
-    def generate_abstract(self) -> str:
+    def generate_abstract(self, outline_section: Dict = None) -> str:
         """
-        Generate paper abstract using GPT.
+        Generate paper abstract using GPT, incorporating outline key points.
         """
         metrics = extract_metrics_summary(self.analysis_result["metrics"])
         complexity = extract_complexity_summary(self.analysis_result["complexity"])
         paper_name = self.paper_plan["paper_name"]
+        
+        # Add key points from outline if available
+        key_points = ""
+        if outline_section and "key_points" in outline_section:
+            key_points = "\n".join([f"- {point}" for point in outline_section["key_points"]])
+            key_points = f"\nIncorporate these key points in the abstract:\n{key_points}"
+        
         prompt = f"""
         Write an abstract for a research paper analyzing the implementation of {paper_name}.
         The code has the following characteristics:
@@ -92,7 +99,7 @@ class PaperGenerator:
         {metrics}
         {complexity}
         
-        The paper analyzes the architecture, implementation details, and code quality.
+        The paper analyzes the architecture, implementation details, and code quality.{key_points}
         """
         
         try:
@@ -111,12 +118,18 @@ class PaperGenerator:
             print(f"Error generating abstract: {e}")
             return "Abstract generation failed. Please check your code analysis results and try again."
     
-    def generate_introduction(self) -> str:
+    def generate_introduction(self, outline_section: Dict = None) -> str:
         """
         Generate introduction section using GPT.
         """
         paper_name = self.paper_plan["paper_name"]
         
+        # Add key points from outline if available
+        key_points = ""
+        if outline_section and "key_points" in outline_section:
+            key_points = "\n".join([f"- {point}" for point in outline_section["key_points"]])
+            key_points = f"\nIncorporate these key points in the abstract:\n{key_points}"
+
         prompt = f"""
         Write an introduction section for a research paper analyzing the implementation of {paper_name}.
         
@@ -126,7 +139,7 @@ class PaperGenerator:
         3. Overview of the paper structure
         4. Main contributions
         
-        Keep it academic, concise, and focused on code analysis rather than the model's performance.
+        Keep it academic, concise, and focused on code analysis rather than the model's performance.{key_points}
         
         IMPORTANT: Do not use any markdown formatting like **bold** or *italic* in your response as this will be directly inserted into a LaTeX document. Do not conclude this part.
         """
@@ -147,7 +160,60 @@ class PaperGenerator:
             print(f"Error generating introduction: {e}")
             return "Introduction generation failed. Please check your code analysis results and try again."
     
-    def generate_architecture_section(self) -> str:
+    def generate_related_work_section(self, outline_section: Dict = None) -> str:
+        """
+        Generate related work section using GPT.
+        """
+        paper_name = self.paper_plan["paper_name"]
+        
+        # Add key points from outline if available
+        key_points = ""
+        if outline_section and "key_points" in outline_section:
+            key_points = "\n".join([f"- {point}" for point in outline_section["key_points"]])
+            key_points = f"\nIncorporate these key points in the related work section:\n{key_points}"
+
+        # Extract any relevant algorithm information from the analysis
+        neural_network_info = self.analysis_result["algorithms"]["neural_network"]
+        attention_info = self.analysis_result["algorithms"]["attention_mechanism"]
+        
+        prompt = f"""
+        Write a comprehensive related work section for a research paper analyzing the implementation of {paper_name}.
+        
+        Focus on:
+        1. Previous works on sequence modeling and attention mechanisms that influenced this implementation
+        2. Comparison of Transformer architecture with RNNs and LSTMs in terms of performance and scalability
+        3. Important studies that have enhanced Transformer's efficiency and effectiveness
+        4. Evolution of Transformer models up to this implementation
+        
+        Implementation details to consider:
+        - Neural network components: {neural_network_info}
+        - Attention mechanism: {attention_info}
+        {key_points}
+        
+        Be scholarly and cite relevant papers using LaTeX citation style (e.g., \cite{{vaswani2017attention}}). 
+        Make sure to include seminal works like "Attention is All You Need" and other important research that 
+        has shaped the evolution of Transformer models.
+        
+        IMPORTANT: Do not use any markdown formatting like **bold** or *italic* in your response as this will be directly inserted into a LaTeX document. Do not write a conclusion for this section.
+        """
+        
+        try:
+            response = self.openai_client.chat.completions.create(
+                model=self.gpt_version,
+                messages=[
+                    {"role": "system", "content": "You are an expert AI researcher who writes comprehensive literature reviews."},
+                    {"role": "user", "content": prompt}
+                ]
+            )
+            
+            related_work_section = response.choices[0].message.content.strip()
+            return related_work_section
+            
+        except Exception as e:
+            print(f"Error generating related work section: {e}")
+            return "Related work section generation failed. Please check your code analysis results and try again."
+
+    def generate_architecture_section(self, outline_section: Dict = None) -> str:
         """
         Generate architecture and implementation details section using GPT.
         """
@@ -187,6 +253,12 @@ class PaperGenerator:
         except Exception as e:
             print(f"Error reading component flow diagram: {e}")
         
+        # Add key points from outline if available
+        key_points = ""
+        if outline_section and "key_points" in outline_section:
+            key_points = "\n".join([f"- {point}" for point in outline_section["key_points"]])
+            key_points = f"\nIncorporate these key points in the abstract:\n{key_points}"
+
         diagram_info = f"""
         Architecture Diagram Overview:
         Contains classes: {', '.join(classes[:5])}{'...' if len(classes) > 5 else ''}
@@ -213,7 +285,7 @@ class PaperGenerator:
         2. Implementation of the multi-head attention mechanism if it exists (else don't write about it)
         3. Feed-forward networks and layer normalization if it exists (else don't write about it)
         4. Data flow through the model
-        
+        {key_points}
         Include references to the figures (Figure 1: Architecture Diagram, Figure 2: Class Diagram, Figure 3: Component Flow).
         Write in an academic style with technical details.
         
@@ -236,7 +308,7 @@ class PaperGenerator:
             print(f"Error generating architecture section: {e}")
             return "Architecture section generation failed. Please check your code analysis results and try again."
     
-    def generate_code_quality_section(self) -> str:
+    def generate_code_quality_section(self, outline_section: Dict = None) -> str:
         """
         Generate code quality analysis section using GPT.
         """
@@ -252,6 +324,12 @@ class PaperGenerator:
             f"- Overall quality score: {code_quality.get('overall_quality', 0):.2f}"
         ])
         
+        # Add key points from outline if available
+        key_points = ""
+        if outline_section and "key_points" in outline_section:
+            key_points = "\n".join([f"- {point}" for point in outline_section["key_points"]])
+            key_points = f"\nIncorporate these key points in the abstract:\n{key_points}"
+
         prompt = f"""
         Write a code quality analysis section for a research paper evaluating implementation of {paper_name}.
         The code quality metrics are:
@@ -265,7 +343,7 @@ class PaperGenerator:
         2. Documentation quality
         3. Adherence to Python best practices
         4. Areas for potential improvement
-        
+        {key_points}
         Be analytical and provide concrete suggestions for improvement.
         
         IMPORTANT: Do not use any markdown formatting like **bold** or *italic* in your response as this will be directly inserted into a LaTeX document. Do not write conclusion for this part.
@@ -287,7 +365,7 @@ class PaperGenerator:
             print(f"Error generating code quality section: {e}")
             return "Code quality section generation failed. Please check your code analysis results and try again."
     
-    def generate_conclusion(self) -> str:
+    def generate_conclusion(self, outline_section: Dict = None) -> str:
         """
         Generate conclusion section using GPT.
         """
@@ -296,6 +374,12 @@ class PaperGenerator:
         code_quality = self.analysis_result["code_quality"]
         paper_name = self.paper_plan["paper_name"]
         
+        # Add key points from outline if available
+        key_points = ""
+        if outline_section and "key_points" in outline_section:
+            key_points = "\n".join([f"- {point}" for point in outline_section["key_points"]])
+            key_points = f"\nIncorporate these key points in the abstract:\n{key_points}"
+
         prompt = f"""
         Write a conclusion section for a research paper analyzing the implementation of {paper_name}.
         
@@ -309,7 +393,7 @@ class PaperGenerator:
         2. Strengths and weaknesses of the implementation
         3. Recommendations for improvement
         4. Final thoughts on the implementation's suitability for production or research
-        
+        {key_points}
         Keep it concise, balanced, and provide meaningful insights.
         
         IMPORTANT: Do not use any markdown formatting like **bold** or *italic* in your response as this will be directly inserted into a LaTeX document.
@@ -335,29 +419,47 @@ class PaperGenerator:
         """
         Generate the complete paper with all sections.
         """
+        outline = self.paper_plan.get("outline", {})
+        
         print("Generating diagrams...")
         figure_paths = self.generate_figures()
         
         print("Generating abstract...")
-        abstract = self.generate_abstract()
+        # abstract = self.generate_abstract()
+        abstract_outline = outline.get("section_1", {})
+        abstract = self.generate_abstract(outline_section=abstract_outline)
         
         print("Generating introduction...")
-        introduction = self.generate_introduction()
-        
+        # introduction = self.generate_introduction()
+        intro_outline = outline.get("section_2", {})
+        introduction = self.generate_introduction(outline_section=intro_outline)
+    
+        print("Generating relative work section...")
+        # code_quality_section = self.generate_code_quality_section()
+        quality_outline = outline.get("section_3", {})
+        related_work_section = self.generate_related_work_section(outline_section=quality_outline)
+
         print("Generating architecture section...")
-        architecture_section = self.generate_architecture_section()
-        
+        # architecture_section = self.generate_architecture_section()
+        arch_outline = outline.get("section_4", {})
+        architecture_section = self.generate_architecture_section(outline_section=arch_outline)
+
         print("Generating code quality section...")
-        code_quality_section = self.generate_code_quality_section()
-        
+        # code_quality_section = self.generate_code_quality_section()
+        quality_outline = outline.get("section_5", {})
+        code_quality_section = self.generate_code_quality_section(outline_section=quality_outline)
+
         print("Generating conclusion...")
-        conclusion = self.generate_conclusion()
+        # conclusion = self.generate_conclusion()
+        conclusion_outline = outline.get("section_6", {})
+        conclusion = self.generate_conclusion(outline_section=conclusion_outline)
         
         # Compile the paper
         paper = {
             "title": f"Analysis of {self.paper_plan['paper_name']} Implementation",
             "abstract": abstract,
             "introduction": introduction,
+            "related_work": related_work_section,
             "architecture": architecture_section,
             "code_quality": code_quality_section,
             "conclusion": conclusion,
@@ -410,6 +512,9 @@ class PaperGenerator:
 
 {paper['architecture']}
 
+## 3. Related Work
+{paper['related_work']}
+
 ### Figure 1: Architecture Diagram
 
 ```mermaid
@@ -431,11 +536,10 @@ class PaperGenerator:
 ```
 *Figure 3: Component flow diagram illustrating data processing pipeline*
 
-## 3. Code Quality Analysis
-
+## 4. Code Quality Analysis
 {paper['code_quality']}
 
-## 4. Conclusion
+## 5. Conclusion
 
 {paper['conclusion']}
 """
@@ -481,6 +585,7 @@ class PaperGenerator:
         
         # Clean markdown formatting for LaTeX
         clean_introduction = self.clean_markdown_for_latex(paper['introduction'])
+        clean_related_work = self.clean_markdown_for_latex(paper['related_work'])
         clean_architecture = self.clean_markdown_for_latex(paper['architecture'])
         clean_code_quality = self.clean_markdown_for_latex(paper['code_quality'])
         clean_conclusion = self.clean_markdown_for_latex(paper['conclusion'])
@@ -497,6 +602,9 @@ class PaperGenerator:
 
 \\section{Introduction}
 """ + clean_introduction + """
+
+\\section{Introduction}
+""" + clean_related_work + """
 
 \\section{Architecture and Implementation}
 """ + clean_architecture + """

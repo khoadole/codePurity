@@ -89,9 +89,8 @@ class PaperPlanner:
         2. Introduction to {self.paper_name}
         3. Related Work
         4. Architecture and Implementation Details
-        5. Experimental Setup
-        6. Results and Discussion
-        7. Conclusion
+        5. Code Quality Analysis
+        6. Conclusion
         
         For each section, provide 3-5 key points to address.
         """
