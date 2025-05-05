@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Planning Module for Transformer Paper Generation
+Planning Module for Paper Generation
 
-This script analyzes a preprocessed Python file containing Transformer implementation 
+This script analyzes a preprocessed Python file containing implementation 
 and creates a structured plan for generating a research paper about it.
 """
 

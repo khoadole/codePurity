@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Utility Functions for Transformer Paper Generation
+Utility Functions for Paper Generation
 
 This module provides helper functions for rendering diagrams, formatting text, 
 and other utilities needed across the paper generation process.
@@ -823,7 +823,6 @@ def generate_tex_preamble(title: str) -> str: # <-- Add 'title: str' here
     urlcolor=cyan,
     pdftitle={{{escaped_title}}}, # <-- Use escaped title
     pdfauthor={{Automatic Paper Generator}},
-    pdfkeywords={{Deep Learning, Transformer, Neural Networks}},
     pdfsubject={{AI Paper}},
     pdfcreator={{LaTeX}},
     pdfproducer={{pdfTeX}}

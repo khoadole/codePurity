@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Code Preprocessor for Transformer Paper Generation
+Code Preprocessor for Paper Generation
 
-This script preprocesses a Python source code file (particularly focused on Transformer implementations)
+This script preprocesses a Python source code file
 by cleaning comments, standardizing formatting, and preparing it for further analysis.
 """
 

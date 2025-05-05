@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Paper Generation Module for Transformer Paper with Mermaid Diagrams
+Paper Generation Module for Paper with Mermaid Diagrams
 
 This script creates a complete research paper document based on code analysis results,
 generating text content, Mermaid diagrams, and formatting the final document.
@@ -84,9 +84,9 @@ class PaperGenerator:
         """
         metrics = extract_metrics_summary(self.analysis_result["metrics"])
         complexity = extract_complexity_summary(self.analysis_result["complexity"])
-        
+        paper_name = self.paper_plan["paper_name"]
         prompt = f"""
-        Write an abstract for a research paper analyzing a Transformer model implementation.
+        Write an abstract for a research paper analyzing the implementation of {paper_name}.
         The code has the following characteristics:
         
         {metrics}
@@ -118,17 +118,17 @@ class PaperGenerator:
         paper_name = self.paper_plan["paper_name"]
         
         prompt = f"""
-        Write an introduction section for a research paper analyzing the implementation of a {paper_name} model.
+        Write an introduction section for a research paper analyzing the implementation of {paper_name}.
         
         Include:
-        1. Background on transformers and their importance
+        1. Background and importance of {paper_name}
         2. Motivation for analyzing this particular implementation
         3. Overview of the paper structure
         4. Main contributions
         
         Keep it academic, concise, and focused on code analysis rather than the model's performance.
         
-        IMPORTANT: Do not use any markdown formatting like **bold** or *italic* in your response as this will be directly inserted into a LaTeX document.
+        IMPORTANT: Do not use any markdown formatting like **bold** or *italic* in your response as this will be directly inserted into a LaTeX document. Do not conclude this part.
         """
         
         try:
@@ -155,6 +155,7 @@ class PaperGenerator:
         classes = list(self.analysis_result["complexity"]["classes"].keys())
         neural_network_info = self.analysis_result["algorithms"]["neural_network"]
         attention_info = self.analysis_result["algorithms"]["attention_mechanism"]
+        paper_name = self.paper_plan["paper_name"]
         
         # Read Mermaid diagrams if available
         architecture_diagram_path = os.path.join(self.figures_dir, "architecture_diagram.mmd")
@@ -198,7 +199,7 @@ class PaperGenerator:
         """
         
         prompt = f"""
-        Write a detailed architecture and implementation section for a research paper analyzing a Transformer implementation.
+        Write a detailed architecture and implementation section for a research paper analyzing the implementation of {paper_name}.
         
         Key components include:
         - Classes: {classes}
@@ -209,14 +210,14 @@ class PaperGenerator:
         
         Focus on:
         1. Overall architecture design
-        2. Implementation of the multi-head attention mechanism
-        3. Feed-forward networks and layer normalization
+        2. Implementation of the multi-head attention mechanism if it exists (else don't write about it)
+        3. Feed-forward networks and layer normalization if it exists (else don't write about it)
         4. Data flow through the model
         
         Include references to the figures (Figure 1: Architecture Diagram, Figure 2: Class Diagram, Figure 3: Component Flow).
         Write in an academic style with technical details.
         
-        IMPORTANT: Do not use any markdown formatting like **bold** or *italic* in your response as this will be directly inserted into a LaTeX document.
+        IMPORTANT: Do not use any markdown formatting like **bold** or *italic* in your response as this will be directly inserted into a LaTeX document. Do not write conclusion here.
         """
         
         try:
@@ -240,6 +241,7 @@ class PaperGenerator:
         Generate code quality analysis section using GPT.
         """
         code_quality = self.analysis_result["code_quality"]
+        paper_name = self.paper_plan["paper_name"]
         
         # Format the quality metrics
         quality_metrics = "\n".join([
@@ -251,7 +253,7 @@ class PaperGenerator:
         ])
         
         prompt = f"""
-        Write a code quality analysis section for a research paper evaluating a Transformer implementation.
+        Write a code quality analysis section for a research paper evaluating implementation of {paper_name}.
         The code quality metrics are:
         
         {quality_metrics}
@@ -266,7 +268,7 @@ class PaperGenerator:
         
         Be analytical and provide concrete suggestions for improvement.
         
-        IMPORTANT: Do not use any markdown formatting like **bold** or *italic* in your response as this will be directly inserted into a LaTeX document.
+        IMPORTANT: Do not use any markdown formatting like **bold** or *italic* in your response as this will be directly inserted into a LaTeX document. Do not write conclusion for this part.
         """
         
         try:
@@ -292,9 +294,10 @@ class PaperGenerator:
         # Extract key metrics for the conclusion
         metrics = self.analysis_result["metrics"]
         code_quality = self.analysis_result["code_quality"]
+        paper_name = self.paper_plan["paper_name"]
         
         prompt = f"""
-        Write a conclusion section for a research paper analyzing a Transformer implementation.
+        Write a conclusion section for a research paper analyzing the implementation of {paper_name}.
         
         The codebase has:
         - {metrics.get('class_count', 0)} classes
@@ -352,7 +355,7 @@ class PaperGenerator:
         
         # Compile the paper
         paper = {
-            "title": f"Analysis of {self.paper_plan['paper_name']} Model Implementation",
+            "title": f"Analysis of {self.paper_plan['paper_name']} Implementation",
             "abstract": abstract,
             "introduction": introduction,
             "architecture": architecture_section,
@@ -378,13 +381,13 @@ class PaperGenerator:
             with open(paper['figures']['architecture'], 'r', encoding='utf-8') as f:
                 architecture_mermaid = f.read()
         except:
-            architecture_mermaid = "classDiagram\n    class Transformer"
+            architecture_mermaid = "classDiagram\n"
         
         try:
             with open(paper['figures']['class_diagram'], 'r', encoding='utf-8') as f:
                 class_diagram_mermaid = f.read()
         except:
-            class_diagram_mermaid = "classDiagram\n    class Transformer"
+            class_diagram_mermaid = "classDiagram\n"
         
         try:
             with open(paper['figures']['component_flow'], 'r', encoding='utf-8') as f:
@@ -435,12 +438,6 @@ class PaperGenerator:
 ## 4. Conclusion
 
 {paper['conclusion']}
-
-## References
-
-1. Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., ... & Polosukhin, I. (2017). Attention is all you need. In Advances in neural information processing systems (pp. 5998-6008).
-2. Devlin, J., Chang, M. W., Lee, K., & Toutanova, K. (2018). Bert: Pre-training of deep bidirectional transformers for language understanding. arXiv preprint arXiv:1810.04805.
-3. Brown, T. B., Mann, B., Ryder, N., Subbiah, M., Kaplan, J., Dhariwal, P., ... & Amodei, D. (2020). Language models are few-shot learners. arXiv preprint arXiv:2005.14165.
 """
         
         # Save markdown file

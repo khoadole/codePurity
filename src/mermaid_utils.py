@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Mermaid Diagram Generation Utilities for Transformer Paper
+Mermaid Diagram Generation Utilities
 
 This module replaces matplotlib-based diagram generation with OpenAI-powered Mermaid diagrams,
 producing more accurate and detailed visualizations.

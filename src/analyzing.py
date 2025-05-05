@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Code Analysis Module for Transformer Paper Generation
+Code Analysis Module for Paper Generation
 
-This script performs in-depth analysis of the Transformer implementation,
+This script performs in-depth analysis of the implementation,
 including complexity analysis, algorithm identification, data flow analysis,
 and code quality assessment.
 """
