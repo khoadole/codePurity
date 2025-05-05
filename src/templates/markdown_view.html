@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown View - Code to Document Converter</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css">
+    <style>
+        body {
+            padding: 2rem;
+            background-color: #f8f9fa;
+        }
+        .markdown-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .markdown-body {
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 980px;
+            margin: 0 auto;
+        }
+        .markdown-body img {
+            max-width: 100%;
+            height: auto;
+        }
+        .back-link {
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="markdown-container">
+        <div class="back-link">
+            <a href="javascript:history.back()" class="btn btn-outline-primary">&larr; Back</a>
+        </div>
+        
+        <div class="markdown-body" id="markdown-content">
+            {{ markdown_content }}
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.2.12/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const markdownContent = document.getElementById('markdown-content');
+            if (markdownContent) {
+                const content = markdownContent.textContent;
+                markdownContent.innerHTML = marked.parse(content);
+                
+                // Apply syntax highlighting
+                document.querySelectorAll('pre code').forEach((block) => {
+                    hljs.highlightElement(block);
+                });
+            }
+        });
+    </script>
+</body>
+</html> 

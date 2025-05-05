@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Paper Generation Module for Transformer Paper
+Paper Generation Module for Transformer Paper with Mermaid Diagrams
 
 This script creates a complete research paper document based on code analysis results,
-generating text content, figures, and formatting the final document.
+generating text content, Mermaid diagrams, and formatting the final document.
 """
 
 import argparse
@@ -17,9 +17,11 @@ import networkx as nx
 import openai
 from utils import (
     load_json, save_json, create_directory,
-    generate_architecture_diagram, generate_class_diagram, generate_component_flow_diagram,
     format_markdown, generate_tex_preamble, generate_tex_closing,
     extract_metrics_summary, extract_complexity_summary
+)
+from mermaid_utils import (
+    generate_architecture_diagram, generate_class_diagram, generate_component_flow_diagram
 )
 
 class PaperGenerator:
@@ -39,34 +41,40 @@ class PaperGenerator:
         
     def generate_figures(self) -> Dict[str, str]:
         """
-        Generate all figures for the paper.
+        Generate all figures for the paper using Mermaid diagrams.
         """
         figure_paths = {}
         
         # Generate architecture diagram
-        architecture_path = os.path.join(self.figures_dir, "architecture_diagram.png")
+        architecture_path = os.path.join(self.figures_dir, "architecture_diagram")
         generate_architecture_diagram(
             self.analysis_result["complexity"]["classes"],
-            architecture_path
+            architecture_path + ".png",  # Still pass .png for compatibility
+            self.openai_client,
+            self.gpt_version
         )
-        figure_paths["architecture"] = architecture_path
+        figure_paths["architecture"] = architecture_path + ".mmd"
         
         # Generate class diagram
-        class_diagram_path = os.path.join(self.figures_dir, "class_diagram.png")
+        class_diagram_path = os.path.join(self.figures_dir, "class_diagram")
         generate_class_diagram(
             self.analysis_result["complexity"]["classes"],
             self.analysis_result["dependencies"],
-            class_diagram_path
+            class_diagram_path + ".png",  # Still pass .png for compatibility
+            self.openai_client,
+            self.gpt_version
         )
-        figure_paths["class_diagram"] = class_diagram_path
+        figure_paths["class_diagram"] = class_diagram_path + ".mmd"
         
         # Generate component flow diagram
-        component_flow_path = os.path.join(self.figures_dir, "component_flow.png")
+        component_flow_path = os.path.join(self.figures_dir, "component_flow")
         generate_component_flow_diagram(
             self.analysis_result["data_flow"],
-            component_flow_path
+            component_flow_path + ".png",  # Still pass .png for compatibility
+            self.openai_client,
+            self.gpt_version
         )
-        figure_paths["component_flow"] = component_flow_path
+        figure_paths["component_flow"] = component_flow_path + ".mmd"
         
         return figure_paths
     
@@ -119,6 +127,8 @@ class PaperGenerator:
         4. Main contributions
         
         Keep it academic, concise, and focused on code analysis rather than the model's performance.
+        
+        IMPORTANT: Do not use any markdown formatting like **bold** or *italic* in your response as this will be directly inserted into a LaTeX document.
         """
         
         try:
@@ -146,6 +156,47 @@ class PaperGenerator:
         neural_network_info = self.analysis_result["algorithms"]["neural_network"]
         attention_info = self.analysis_result["algorithms"]["attention_mechanism"]
         
+        # Read Mermaid diagrams if available
+        architecture_diagram_path = os.path.join(self.figures_dir, "architecture_diagram.mmd")
+        class_diagram_path = os.path.join(self.figures_dir, "class_diagram.mmd")
+        component_flow_path = os.path.join(self.figures_dir, "component_flow.mmd")
+        
+        architecture_diagram = ""
+        class_diagram = ""
+        component_flow = ""
+        
+        try:
+            if os.path.exists(architecture_diagram_path):
+                with open(architecture_diagram_path, 'r', encoding='utf-8') as f:
+                    architecture_diagram = f.read()
+        except Exception as e:
+            print(f"Error reading architecture diagram: {e}")
+            
+        try:
+            if os.path.exists(class_diagram_path):
+                with open(class_diagram_path, 'r', encoding='utf-8') as f:
+                    class_diagram = f.read()
+        except Exception as e:
+            print(f"Error reading class diagram: {e}")
+            
+        try:
+            if os.path.exists(component_flow_path):
+                with open(component_flow_path, 'r', encoding='utf-8') as f:
+                    component_flow = f.read()
+        except Exception as e:
+            print(f"Error reading component flow diagram: {e}")
+        
+        diagram_info = f"""
+        Architecture Diagram Overview:
+        Contains classes: {', '.join(classes[:5])}{'...' if len(classes) > 5 else ''}
+        
+        Class Diagram Overview: 
+        Shows relationships between classes including inheritance and dependencies.
+        
+        Component Flow Overview:
+        Illustrates the data processing pipeline from input to output.
+        """
+        
         prompt = f"""
         Write a detailed architecture and implementation section for a research paper analyzing a Transformer implementation.
         
@@ -153,6 +204,8 @@ class PaperGenerator:
         - Classes: {classes}
         - Neural network elements: {neural_network_info}
         - Attention mechanism: {attention_info}
+        
+        {diagram_info}
         
         Focus on:
         1. Overall architecture design
@@ -162,6 +215,8 @@ class PaperGenerator:
         
         Include references to the figures (Figure 1: Architecture Diagram, Figure 2: Class Diagram, Figure 3: Component Flow).
         Write in an academic style with technical details.
+        
+        IMPORTANT: Do not use any markdown formatting like **bold** or *italic* in your response as this will be directly inserted into a LaTeX document.
         """
         
         try:
@@ -210,6 +265,8 @@ class PaperGenerator:
         4. Areas for potential improvement
         
         Be analytical and provide concrete suggestions for improvement.
+        
+        IMPORTANT: Do not use any markdown formatting like **bold** or *italic* in your response as this will be directly inserted into a LaTeX document.
         """
         
         try:
@@ -251,6 +308,8 @@ class PaperGenerator:
         4. Final thoughts on the implementation's suitability for production or research
         
         Keep it concise, balanced, and provide meaningful insights.
+        
+        IMPORTANT: Do not use any markdown formatting like **bold** or *italic* in your response as this will be directly inserted into a LaTeX document.
         """
         
         try:
@@ -273,7 +332,7 @@ class PaperGenerator:
         """
         Generate the complete paper with all sections.
         """
-        print("Generating figures...")
+        print("Generating diagrams...")
         figure_paths = self.generate_figures()
         
         print("Generating abstract...")
@@ -306,11 +365,34 @@ class PaperGenerator:
     
     def save_paper_markdown(self, paper: Dict[str, str]) -> str:
         """
-        Save the paper in Markdown format.
+        Save the paper in Markdown format with Mermaid diagrams.
         """
         markdown_path = os.path.join(self.output_dir, "paper.md")
         
-        # Create markdown content
+        # Read mermaid code from files for diagrams
+        architecture_mermaid = ""
+        class_diagram_mermaid = ""
+        component_flow_mermaid = ""
+        
+        try:
+            with open(paper['figures']['architecture'], 'r', encoding='utf-8') as f:
+                architecture_mermaid = f.read()
+        except:
+            architecture_mermaid = "classDiagram\n    class Transformer"
+        
+        try:
+            with open(paper['figures']['class_diagram'], 'r', encoding='utf-8') as f:
+                class_diagram_mermaid = f.read()
+        except:
+            class_diagram_mermaid = "classDiagram\n    class Transformer"
+        
+        try:
+            with open(paper['figures']['component_flow'], 'r', encoding='utf-8') as f:
+                component_flow_mermaid = f.read()
+        except:
+            component_flow_mermaid = "flowchart TD\n    A-->B"
+        
+        # Create markdown content with mermaid diagrams
         markdown_content = f"""# {paper['title']}
 
 ## Abstract
@@ -325,13 +407,25 @@ class PaperGenerator:
 
 {paper['architecture']}
 
-![Architecture Diagram](figures/architecture_diagram.png)
+### Figure 1: Architecture Diagram
+
+```mermaid
+{architecture_mermaid}
+```
 *Figure 1: Architecture diagram of the {self.paper_plan['paper_name']} implementation*
 
-![Class Diagram](figures/class_diagram.png)
+### Figure 2: Class Diagram
+
+```mermaid
+{class_diagram_mermaid}
+```
 *Figure 2: Class diagram showing relationships between components*
 
-![Component Flow](figures/component_flow.png)
+### Figure 3: Component Flow Diagram
+
+```mermaid
+{component_flow_mermaid}
+```
 *Figure 3: Component flow diagram illustrating data processing pipeline*
 
 ## 3. Code Quality Analysis
@@ -356,11 +450,44 @@ class PaperGenerator:
         print(f"Paper saved as markdown at {markdown_path}")
         return markdown_path
     
+    def clean_markdown_for_latex(self, text: str) -> str:
+        """
+        Cleans markdown formatting and converts to LaTeX formatting.
+        """
+        # Replace Markdown bold with LaTeX bold
+        text = re.sub(r'\*\*([^*]+)\*\*', r'\\textbf{\1}', text)
+        
+        # Replace Markdown italic with LaTeX italic
+        text = re.sub(r'\*([^*]+)\*', r'\\textit{\1}', text)
+        
+        # Replace Markdown headers with LaTeX sections/subsections
+        text = re.sub(r'^#\s+(.+)$', r'\\section{\1}', text, flags=re.MULTILINE)
+        text = re.sub(r'^##\s+(.+)$', r'\\subsection{\1}', text, flags=re.MULTILINE)
+        text = re.sub(r'^###\s+(.+)$', r'\\subsubsection{\1}', text, flags=re.MULTILINE)
+        
+        # Replace Markdown lists with LaTeX lists
+        text = re.sub(r'^-\s+(.+)$', r'\\item \1', text, flags=re.MULTILINE)
+        
+        # Escape special LaTeX characters
+        text = text.replace('%', r'\%')
+        text = text.replace('&', r'\&')
+        text = text.replace('#', r'\#')
+        text = text.replace('_', r'\_')
+        
+        return text
+    
     def save_paper_tex(self, paper: Dict[str, str]) -> str:
         """
         Save the paper in LaTeX format.
         """
         tex_path = os.path.join(self.output_dir, "paper.tex")
+        
+        # Clean markdown formatting for LaTeX
+        clean_introduction = self.clean_markdown_for_latex(paper['introduction'])
+        clean_architecture = self.clean_markdown_for_latex(paper['architecture'])
+        clean_code_quality = self.clean_markdown_for_latex(paper['code_quality'])
+        clean_conclusion = self.clean_markdown_for_latex(paper['conclusion'])
+        clean_abstract = self.clean_markdown_for_latex(paper['abstract'])
         
         # Create LaTeX content
         tex_content = generate_tex_preamble(paper['title'])
@@ -368,41 +495,41 @@ class PaperGenerator:
         # Abstract
         tex_content += """
 \\begin{abstract}
-""" + paper['abstract'] + """
+""" + clean_abstract + """
 \\end{abstract}
 
 \\section{Introduction}
-""" + paper['introduction'] + """
+""" + clean_introduction + """
 
 \\section{Architecture and Implementation}
-""" + paper['architecture'] + """
+""" + clean_architecture + """
 
 \\begin{figure}[h]
 \\centering
-\\includegraphics[width=0.8\\textwidth]{figures/architecture_diagram.png}
+\\includegraphics[width=0.95\\columnwidth,keepaspectratio]{figures/architecture_diagram.png}
 \\caption{Architecture diagram of the """ + self.paper_plan['paper_name'] + """ implementation}
 \\label{fig:architecture}
 \\end{figure}
 
 \\begin{figure}[h]
 \\centering
-\\includegraphics[width=0.8\\textwidth]{figures/class_diagram.png}
+\\includegraphics[width=0.95\\columnwidth,keepaspectratio]{figures/class_diagram.png}
 \\caption{Class diagram showing relationships between components}
 \\label{fig:class_diagram}
 \\end{figure}
 
 \\begin{figure}[h]
 \\centering
-\\includegraphics[width=0.8\\textwidth]{figures/component_flow.png}
+\\includegraphics[width=0.95\\columnwidth,keepaspectratio]{figures/component_flow.png}
 \\caption{Component flow diagram illustrating data processing pipeline}
 \\label{fig:component_flow}
 \\end{figure}
 
 \\section{Code Quality Analysis}
-""" + paper['code_quality'] + """
+""" + clean_code_quality + """
 
 \\section{Conclusion}
-""" + paper['conclusion'] + """
+""" + clean_conclusion + """
 
 """ + generate_tex_closing()
         
