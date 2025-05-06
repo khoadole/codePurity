@@ -141,7 +141,7 @@ class PaperGenerator:
         
         Keep it academic, concise, and focused on code analysis rather than the model's performance.{key_points}
         
-        IMPORTANT: Do not use any markdown formatting like **bold** or *italic* in your response as this will be directly inserted into a LaTeX document. Do not conclude this part.
+        IMPORTANT: Do not use any markdown formatting like **bold** or *italic* in your response as this will be directly inserted into a LaTeX document. Do not write conclusion and title here.
         """
         
         try:
@@ -198,11 +198,10 @@ class PaperGenerator:
         - Design Pattern: {design_patterns_info}, ignore if all values are False
         {key_points}
         
-        Be scholarly and cite relevant papers using LaTeX citation style. 
-        Make sure to include seminal works like "Attention is All You Need" and other important research that 
-        has shaped the evolution of Transformer models.
+        Be scholarly and cite relevant papers using citation style. 
+        Make sure to include seminal works and other important research.
         
-        IMPORTANT: Do not use any markdown formatting like **bold** or *italic* in your response as this will be directly inserted into a LaTeX document. Do not write a conclusion for this section.
+        IMPORTANT: Do not use any markdown formatting like **bold** or *italic* in your response as this will be directly inserted into a LaTeX document. Do not write a conclusion or title for this section.
         """
         
         try:
@@ -296,14 +295,13 @@ class PaperGenerator:
         
         Focus on:
         1. Overall architecture design
-        2. Implementation of the multi-head attention mechanism if it exists (else don't write about it)
-        3. Feed-forward networks and layer normalization if it exists (else don't write about it)
-        4. Data flow through the model
+        2. Detailed implementation of existed key components.
+        3. Data flow through the model
         {key_points}
         Include references to the figures (Figure 1: Architecture Diagram, Figure 2: Class Diagram, Figure 3: Component Flow).
         Write in an academic style with technical details.
-        
-        IMPORTANT: Do not use any markdown formatting like **bold** or *italic* in your response as this will be directly inserted into a LaTeX document. Do not write conclusion here.
+
+        IMPORTANT: Do not use any markdown formatting like **bold** or *italic* in your response as this will be directly inserted into a LaTeX document. Do not write conclusion and title here.
         """
         
         try:
@@ -360,7 +358,7 @@ class PaperGenerator:
         {key_points}
         Be analytical and provide concrete suggestions for improvement.
         
-        IMPORTANT: Do not use any markdown formatting like **bold** or *italic* in your response as this will be directly inserted into a LaTeX document. Do not write conclusion for this part.
+        IMPORTANT: Do not use any markdown formatting like **bold** or *italic* in your response as this will be directly inserted into a LaTeX document. Do not write conclusion or title for this part.
         """
         
         try:
@@ -522,12 +520,12 @@ class PaperGenerator:
 
 {paper['introduction']}
 
-## 2. Architecture and Implementation
+## 2. Related Work
+{paper['related_work']}
+
+## 3. Architecture and Implementation
 
 {paper['architecture']}
-
-## 3. Related Work
-{paper['related_work']}
 
 ### Figure 1: Architecture Diagram
 
@@ -617,7 +615,7 @@ class PaperGenerator:
 \\section{Introduction}
 """ + clean_introduction + """
 
-\\section{Introduction}
+\\section{Related Work}
 """ + clean_related_work + """
 
 \\section{Architecture and Implementation}

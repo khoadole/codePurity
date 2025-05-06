@@ -59,7 +59,7 @@ def generate_mermaid_architecture_diagram(classes: Dict[str, Any], openai_client
     3. Reasonable assumptions about relationships between classes based on naming patterns
     
     The diagram should be well-organized and easy to read. Use appropriate Mermaid syntax to represent the architecture clearly.
-    Only return the Mermaid code without any explanation or additional text.
+    Only return the Mermaid code without any explanation or additional text or any additional color.
     Begin your response with "```mermaid" and end with "```".
     """
     
@@ -138,7 +138,7 @@ def generate_mermaid_class_diagram(classes: Dict[str, Any], dependencies: Dict[s
     4. Use appropriate relationship types (aggregation, composition, etc.) when they can be inferred
     
     Make the diagram as clear and organized as possible. Group related classes together visually.
-    Only return the Mermaid code without any explanation or additional text.
+    Only return the Mermaid code without any explanation or additional text or any additional color.
     Begin your response with "```mermaid" and end with "```".
     """
     
@@ -201,7 +201,7 @@ def generate_mermaid_component_flow_diagram(data_flow: Dict[str, Any],
     5. Organizes the flow logically from inputs to outputs
     
     The diagram should clearly illustrate the processing pipeline and component interactions.
-    Only return the Mermaid code without any explanation or additional text.
+    Only return the Mermaid code without any explanation or additional text or any additional color.
     Begin your response with "```mermaid" and end with "```".
     """
     
