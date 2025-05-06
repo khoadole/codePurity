@@ -173,24 +173,32 @@ class PaperGenerator:
             key_points = f"\nIncorporate these key points in the related work section:\n{key_points}"
 
         # Extract any relevant algorithm information from the analysis
+        classes = list(self.analysis_result["complexity"]["classes"].keys())
         neural_network_info = self.analysis_result["algorithms"]["neural_network"]
         attention_info = self.analysis_result["algorithms"]["attention_mechanism"]
+        optimization_info = self.analysis_result["algorithms"]["optimization"]
+        linear_algebra_info = self.analysis_result["algorithms"]["linear_algebra"]
+        design_patterns_info = self.analysis_result["algorithms"]["design_patterns"]
         
         prompt = f"""
         Write a comprehensive related work section for a research paper analyzing the implementation of {paper_name}.
         
         Focus on:
-        1. Previous works on sequence modeling and attention mechanisms that influenced this implementation
-        2. Comparison of Transformer architecture with RNNs and LSTMs in terms of performance and scalability
-        3. Important studies that have enhanced Transformer's efficiency and effectiveness
-        4. Evolution of Transformer models up to this implementation
+        1. Previous works that influenced this implementation
+        2. Comparative analysis of this approach with alternative methods
+        3. Key studies that improved or optimized the approach being used
+        4. Historical evolution of the method or architecture leading to this current implementation
         
         Implementation details to consider:
-        - Neural network components: {neural_network_info}
-        - Attention mechanism: {attention_info}
+        - Classes: {classes}
+        - Neural network elements: {neural_network_info}, ignore this if all values are False
+        - Attention mechanism: {attention_info}, ignore this if all values are False
+        - Optimization: {optimization_info}, ignore this if all values are False
+        - Linear Algebra: {linear_algebra_info}, ignore this if all values are False
+        - Design Pattern: {design_patterns_info}, ignore if all values are False
         {key_points}
         
-        Be scholarly and cite relevant papers using LaTeX citation style (e.g., \cite{{vaswani2017attention}}). 
+        Be scholarly and cite relevant papers using LaTeX citation style. 
         Make sure to include seminal works like "Attention is All You Need" and other important research that 
         has shaped the evolution of Transformer models.
         
@@ -221,6 +229,10 @@ class PaperGenerator:
         classes = list(self.analysis_result["complexity"]["classes"].keys())
         neural_network_info = self.analysis_result["algorithms"]["neural_network"]
         attention_info = self.analysis_result["algorithms"]["attention_mechanism"]
+        optimization_info = self.analysis_result["algorithms"]["optimization"]
+        linear_algebra_info = self.analysis_result["algorithms"]["linear_algebra"]
+        design_patterns_info = self.analysis_result["algorithms"]["design_patterns"]
+        
         paper_name = self.paper_plan["paper_name"]
         
         # Read Mermaid diagrams if available
@@ -275,9 +287,11 @@ class PaperGenerator:
         
         Key components include:
         - Classes: {classes}
-        - Neural network elements: {neural_network_info}
-        - Attention mechanism: {attention_info}
-        
+        - Neural network elements: {neural_network_info}, ignore this if all values are False
+        - Attention mechanism: {attention_info}, ignore this if all values are False
+        - Optimization: {optimization_info}, ignore this if all values are False
+        - Linear Algebra: {linear_algebra_info}, ignore this if all values are False
+        - Design Pattern: {design_patterns_info}, ignore if all values are False
         {diagram_info}
         
         Focus on:
