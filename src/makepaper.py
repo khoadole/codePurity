@@ -5,6 +5,16 @@ Paper Generation Module for Paper with Mermaid Diagrams
 This script creates a complete research paper document based on code analysis results,
 generating text content, Mermaid diagrams, and formatting the final document.
 """
+#(Phai dang nhap huggingface moi xai duoc) huggingface-cli login
+#pip install guardrails-ai
+#guardrails configure
+#N + Y
+#API key cua guardrails: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJnb29nbGUtb2F1dGgyfDEwODIyMTg5NDY4MDg1OTc4MDM2MSIsImFwaUtleUlkIjoiN2M2OGI4ZTQtMmNjZi00MWVkLWJhYzAtNjAwODliYjc3ZGE0Iiwic2NvcGUiOiJyZWFkOnBhY2thZ2VzIiwicGVybWlzc2lvbnMiOltdLCJpYXQiOjE3NDY2MTU0OTksImV4cCI6NDkwMDIxNTQ5OX0.p_XQ7JAMC9qRhYKG0bXsgtBSN0d3sXyD6HZmUWPrdR0
+#guardrails hub install hub://guardrails/toxic_language
+#guardrails hub install hub://guardrails/profanity_free
+#guardrails hub install hub://guardrails/gibberish_text
+#guardrails hub install hub://guardrails/detect_pii
+#guardrails hub install hub://tryolabs/restricttotopic
 
 import argparse
 import json
@@ -24,6 +34,14 @@ from mermaid_utils import (
     generate_architecture_diagram, generate_class_diagram, generate_component_flow_diagram
 )
 
+from guardrails import Guard
+from guardrails.hub import (
+    ToxicLanguage,
+    ProfanityFree,
+    GibberishText,
+    DetectPII,
+    RestrictToTopic 
+)
 class PaperGenerator:
     """Generates a complete research paper from code analysis."""
     
@@ -99,6 +117,8 @@ class PaperGenerator:
         {metrics}
         {complexity}
         
+        IMPORTANT: Avoid **bias**
+        
         The paper analyzes the architecture, implementation details, and code quality.{key_points}
         """
         
@@ -141,7 +161,7 @@ class PaperGenerator:
         
         Keep it academic, concise, and focused on code analysis rather than the model's performance.{key_points}
         
-        IMPORTANT: Do not use any markdown formatting like **bold** or *italic* in your response as this will be directly inserted into a LaTeX document. Do not write conclusion and title here.
+        IMPORTANT: Do not use any markdown formatting like **bold** or *italic* in your response as this will be directly inserted into a LaTeX document. Do not write conclusion and title here. Avoid **bias**
         """
         
         try:
@@ -201,7 +221,7 @@ class PaperGenerator:
         Be scholarly and cite relevant papers using citation style. 
         Make sure to include seminal works and other important research.
         
-        IMPORTANT: Do not use any markdown formatting like **bold** or *italic* in your response as this will be directly inserted into a LaTeX document. Do not write a conclusion or title for this section.
+        IMPORTANT: Do not use any markdown formatting like **bold** or *italic* in your response as this will be directly inserted into a LaTeX document. Do not write a conclusion or title for this section. Avoid **bias**
         """
         
         try:
@@ -301,7 +321,7 @@ class PaperGenerator:
         Include references to the figures (Figure 1: Architecture Diagram, Figure 2: Class Diagram, Figure 3: Component Flow).
         Write in an academic style with technical details.
 
-        IMPORTANT: Do not use any markdown formatting like **bold** or *italic* in your response as this will be directly inserted into a LaTeX document. Do not write conclusion and title here.
+        IMPORTANT: Do not use any markdown formatting like **bold** or *italic* in your response as this will be directly inserted into a LaTeX document. Do not write conclusion and title here. Avoid **bias**
         """
         
         try:
@@ -358,7 +378,7 @@ class PaperGenerator:
         {key_points}
         Be analytical and provide concrete suggestions for improvement.
         
-        IMPORTANT: Do not use any markdown formatting like **bold** or *italic* in your response as this will be directly inserted into a LaTeX document. Do not write conclusion or title for this part.
+        IMPORTANT: Do not use any markdown formatting like **bold** or *italic* in your response as this will be directly inserted into a LaTeX document. Do not write conclusion or title for this part. Avoid **bias**
         """
         
         try:
@@ -408,7 +428,7 @@ class PaperGenerator:
         {key_points}
         Keep it concise, balanced, and provide meaningful insights.
         
-        IMPORTANT: Do not use any markdown formatting like **bold** or *italic* in your response as this will be directly inserted into a LaTeX document.
+        IMPORTANT: Do not use any markdown formatting like **bold** or *italic* in your response as this will be directly inserted into a LaTeX document. Avoid **bias**
         """
         
         try:
@@ -431,6 +451,28 @@ class PaperGenerator:
         """
         Generate the complete paper with all sections.
         """
+        paper_name = self.paper_plan["paper_name"]
+
+        safety_guard = Guard().use_many(
+            ToxicLanguage(validation_method="full", on_fail="exception", threshold=0.5), #Ngôn ngữ tiêu cực
+            ProfanityFree(validation_method="full", on_fail="exception", threshold=0.5), #Ngôn ngự tục tiểu
+            GibberishText(validation_method="full", on_fail="exception", threshold=0.4), #Text rác
+            DetectPII(["EMAIL_ADDRESS", "PHONE_NUMBER"], "exception"), #Chứa thông tin nhạy cảm
+            RestrictToTopic(valid_topics=[paper_name], disable_classifier=True, disable_llm=False, on_fail="exception") #Có liên quan đến chủ đề
+        )
+
+        def generate_valid_text(generate_func, outline, max_retries=5):
+            """
+            Check generated text validity.
+            """    
+            for attempt in range(max_retries):
+                text = generate_func(outline)
+                try:
+                    safety_guard.validate(text)
+                    return text
+                except Exception as e:
+                    print(f"Failed on attempt {attempt+1}: {e}")
+            raise RuntimeError("Exceeded max retries with invalid text.")    
         outline = self.paper_plan.get("outline", {})
         
         print("Generating diagrams...")
@@ -439,32 +481,32 @@ class PaperGenerator:
         print("Generating abstract...")
         # abstract = self.generate_abstract()
         abstract_outline = outline.get("section_1", {})
-        abstract = self.generate_abstract(outline_section=abstract_outline)
+        abstract = generate_valid_text(self.generate_abstract, abstract_outline)
         
         print("Generating introduction...")
         # introduction = self.generate_introduction()
         intro_outline = outline.get("section_2", {})
-        introduction = self.generate_introduction(outline_section=intro_outline)
+        introduction = generate_valid_text(self.generate_introduction, intro_outline)
     
         print("Generating relative work section...")
         # code_quality_section = self.generate_code_quality_section()
-        quality_outline = outline.get("section_3", {})
-        related_work_section = self.generate_related_work_section(outline_section=quality_outline)
+        related_outline = outline.get("section_3", {})
+        related_work_section = generate_valid_text(self.generate_related_work_section, related_outline)
 
         print("Generating architecture section...")
         # architecture_section = self.generate_architecture_section()
         arch_outline = outline.get("section_4", {})
-        architecture_section = self.generate_architecture_section(outline_section=arch_outline)
+        architecture_section = generate_valid_text(self.generate_architecture_section, arch_outline)
 
         print("Generating code quality section...")
         # code_quality_section = self.generate_code_quality_section()
         quality_outline = outline.get("section_5", {})
-        code_quality_section = self.generate_code_quality_section(outline_section=quality_outline)
+        code_quality_section = generate_valid_text(self.generate_code_quality_section, quality_outline)
 
         print("Generating conclusion...")
         # conclusion = self.generate_conclusion()
         conclusion_outline = outline.get("section_6", {})
-        conclusion = self.generate_conclusion(outline_section=conclusion_outline)
+        conclusion = generate_valid_text(self.generate_conclusion, conclusion_outline)
         
         # Compile the paper
         paper = {
