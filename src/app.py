@@ -3,6 +3,10 @@ import subprocess
 import uuid
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory, flash, session
 from werkzeug.utils import secure_filename
+# pip install prometheus_client
+from prometheus_client import start_http_server, Summary, Counter, REGISTRY
+import time
+import threading
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -11,6 +15,11 @@ app.secret_key = os.urandom(24)
 UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
 OUTPUT_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'outputs')
 ALLOWED_EXTENSIONS = {'py'}
+
+# Prometheus metrics
+LATENCY_TIME = Summary('app_latency_seconds', 'Time taken to process user request (latency)')
+PROCESS_TIME = Summary('app_processing_seconds', 'Time taken for processing the file')
+UPLOAD_ERRORS = Counter('upload_errors', 'Number of errors during file upload')
 
 # Create necessary directories
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -28,7 +37,9 @@ def index():
     return render_template('index.html')
 
 @app.route('/upload', methods=['POST'])
+@LATENCY_TIME.time()
 def upload_file():
+    start_latency_time = time.time()  # Start time measurement for latency
     # Check if OpenAI API key was provided
     openai_api_key = request.form.get('openai_api_key', '').strip()
     if not openai_api_key:
@@ -77,6 +88,8 @@ def upload_file():
         cleaned_file_path = os.path.join(run_upload_dir, f"{os.path.splitext(filename)[0]}_cleaned.py")
         
         try:
+            # Measure time before subprocess execution
+            process_start_time = time.time()
             # Step 1: Preprocess
             preprocess_cmd = [
                 'python', 'code_process.py',
@@ -111,15 +124,22 @@ def upload_file():
             ]
             subprocess.run(makepaper_cmd, check=True, env={**os.environ, 'OPENAI_API_KEY': openai_api_key})
             
+                        # End process time measurement
+            process_end_time = time.time()
+            process_time = process_end_time - process_start_time
+            
+            # Record processing time to Prometheus
+            PROCESS_TIME.observe(process_time)
             flash('Processing completed successfully!', 'success')
             return redirect(url_for('results', run_id=run_id))
             
         except subprocess.CalledProcessError as e:
             flash(f'Error during processing: {str(e)}', 'error')
             return redirect(url_for('index'))
-    
-    flash('Invalid file type. Only Python (.py) files are allowed.', 'error')
-    return redirect(url_for('index'))
+    else:
+        UPLOAD_ERRORS.inc()
+        flash('Invalid file type. Only Python (.py) files are allowed.', 'error')
+        return redirect(url_for('index'))
 
 @app.route('/results/<run_id>')
 def results(run_id):
@@ -232,6 +252,18 @@ def view_markdown(run_id):
     except Exception as e:
         flash(f'Error reading markdown file: {str(e)}', 'error')
         return redirect(url_for('results', run_id=run_id))
+    
+@app.route('/metrics')
+def metrics():
+    from prometheus_client import generate_latest
+    response = generate_latest(REGISTRY)
+    return response, 200, {'Content-Type': 'text/plain'}
+
+def start_prometheus():
+    start_http_server(8000)
 
 if __name__ == '__main__':
+    prometheus_thread = threading.Thread(target=start_prometheus)
+    prometheus_thread.start()
+    
     app.run(debug=True, host='0.0.0.0', port=5000)

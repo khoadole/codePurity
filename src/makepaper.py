@@ -128,7 +128,9 @@ class PaperGenerator:
                 messages=[
                     {"role": "system", "content": "You are an expert AI researcher who writes clear, concise academic abstracts."},
                     {"role": "user", "content": prompt}
-                ]
+                ],
+                temperature=0.2,
+                max_tokens=512
             )
             
             abstract = response.choices[0].message.content.strip()
@@ -170,7 +172,9 @@ class PaperGenerator:
                 messages=[
                     {"role": "system", "content": "You are an expert AI researcher who writes clear, academic papers."},
                     {"role": "user", "content": prompt}
-                ]
+                ],
+                temperature=0.2,
+                max_tokens=512
             )
             
             introduction = response.choices[0].message.content.strip()
@@ -230,7 +234,9 @@ class PaperGenerator:
                 messages=[
                     {"role": "system", "content": "You are an expert AI researcher who writes comprehensive literature reviews."},
                     {"role": "user", "content": prompt}
-                ]
+                ],
+                temperature=0.2,
+                max_tokens=512
             )
             
             related_work_section = response.choices[0].message.content.strip()
@@ -330,7 +336,9 @@ class PaperGenerator:
                 messages=[
                     {"role": "system", "content": "You are an expert AI researcher who writes technical architecture descriptions."},
                     {"role": "user", "content": prompt}
-                ]
+                ],
+                temperature=0.2,
+                max_tokens=512
             )
             
             architecture_section = response.choices[0].message.content.strip()
@@ -387,7 +395,9 @@ class PaperGenerator:
                 messages=[
                     {"role": "system", "content": "You are an expert software engineer who specializes in code quality analysis."},
                     {"role": "user", "content": prompt}
-                ]
+                ],
+                temperature=0.2,
+                max_tokens=512
             )
             
             code_quality_section = response.choices[0].message.content.strip()
@@ -437,7 +447,9 @@ class PaperGenerator:
                 messages=[
                     {"role": "system", "content": "You are an expert AI researcher who writes impactful paper conclusions."},
                     {"role": "user", "content": prompt}
-                ]
+                ],
+                temperature=0.2,
+                max_tokens=512
             )
             
             conclusion = response.choices[0].message.content.strip()
@@ -456,7 +468,7 @@ class PaperGenerator:
         safety_guard = Guard().use_many(
             ToxicLanguage(validation_method="full", on_fail="exception", threshold=0.5), #Ngôn ngữ tiêu cực
             ProfanityFree(validation_method="full", on_fail="exception", threshold=0.5), #Ngôn ngự tục tiểu
-            GibberishText(validation_method="full", on_fail="exception", threshold=0.4), #Text rác
+            GibberishText(validation_method="full", on_fail="exception", threshold=0.5), #Text rác
             DetectPII(["EMAIL_ADDRESS", "PHONE_NUMBER"], "exception"), #Chứa thông tin nhạy cảm
             RestrictToTopic(valid_topics=[paper_name], disable_classifier=True, disable_llm=False, on_fail="exception") #Có liên quan đến chủ đề
         )
